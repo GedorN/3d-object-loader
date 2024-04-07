@@ -1,4 +1,4 @@
-// to run: g++ index.cpp src/lib/fileloader.cpp src/lib/shader.cpp -lGL -lglfw -lGLEW -o index && ./index
+// to run: g++ index.cpp src/lib/fileloader.cpp -lGL -lglfw -lGLEW -o index && ./index
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,55 +89,16 @@ int loadOpenGL() {
 
 int main () {
 
-  static const GLfloat g_vertex_buffer_data[] = { 
-0, 0, 0,
-1, 1, 0,
-1, 0, 0,
-0, 0, 0,
-0, 1, 0,
-1, 1, 0,
-0, 0, 0,
-0, 1, 1,
-0, 1, 0,
-0, 0, 0,
-0, 0, 1,
-0, 1, 1,
-0, 1, 0,
-1, 1, 1,
-1, 1, 0,
-0, 1, 0,
-0, 1, 1,
-1, 1, 1,
-1, 0, 0,
-1, 1, 0,
-1, 1, 1,
-1, 0, 0,
-1, 1, 1,
-1, 0, 1,
-0, 0, 0,
-1, 0, 0,
-1, 0, 1,
-0, 0, 0,
-1, 0, 1,
-0, 0, 1,
-0, 0, 1,
-1, 0, 1,
-1, 1, 1,
-0, 0, 1,
-1, 1, 1,
-0, 1, 1
-	};
   int loadOpenGLStatus = loadOpenGL();
   if (loadOpenGLStatus != 1) {
     std::cout << "Erro ao inicilizar o OpenGl" << std::endl;
     exit(-1);
   }
 
-
-  loadFile();
+	char filename[] = "bunny.obj";
+  FileLoader fileloader(filename);
   std::vector<float> vec;
-  getShapes(vec);
-  std::cout << "hello world!" << vec.size() << std::endl;
+  fileloader.getShapes(vec);
   std::vector<float> colors = gerarVetorAleatorio(vec);
 
 
