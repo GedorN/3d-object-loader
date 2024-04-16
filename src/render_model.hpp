@@ -10,8 +10,10 @@ class RenderModel {
     std::vector<float> shape;
     PlanCoords3d translation_coords;
     PlanCoords3d rotation_angle;
+    PlanCoords3d scale_factor;
     IncCoords t_increment_coords;
     IncCoords r_increment_angle;
+    IncCoords s_increment_factor;
     // float translate_x = .0f;
     // float translate_y = .0f;
     // float translate_z = .0f;
@@ -23,7 +25,9 @@ class RenderModel {
   ~RenderModel();
   void handleTranslationKeyboardInput(GLFWwindow* window);
   void handleRotationKeyboardInput(GLFWwindow* window);
+  void handleScaleKeyboardInput(GLFWwindow* window);
   void getShape(std::vector<float> &vec);
   PlanCoords3d getTranlationCoords();
   PlanCoords3d getRotationCoords();
+  PlanCoords3d getScaleCoords();
 };

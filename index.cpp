@@ -31,6 +31,7 @@ glm::mat4 Rz;
 glm::mat4 Rx;
 glm::mat4 Ry;
 glm::mat4 M;
+glm::mat4 S;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS ) {
@@ -176,10 +177,12 @@ int main () {
 
 	PlanCoords3d initial_tranlation_coords = renderModel.getTranlationCoords();
 	PlanCoords3d initial_rotation_angles = renderModel.getRotationCoords();
+	PlanCoords3d scale_factor = renderModel.getScaleCoords();
 	T = glm::translate(glm::mat4(1.0f), glm::vec3(initial_tranlation_coords.x, initial_tranlation_coords.y, initial_tranlation_coords.z));
 	Rz = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.z), glm::vec3(0.0f,0.0f,1.0f));
 	Rx = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.x), glm::vec3(1.0f,0.0f,0.0f));
 	Ry = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.y), glm::vec3(0.0f,1.0f,0.0f));
+	S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z));
   do{
 		// Model m(void);
 		// Clear the screen
@@ -221,11 +224,16 @@ int main () {
 				Rz = glm::rotate(glm::mat4(1.0f), glm::radians(rotation_angles.z), glm::vec3(0.0f,0.0f,1.0f));
 				Rx = glm::rotate(glm::mat4(1.0f), glm::radians(rotation_angles.x), glm::vec3(1.0f,0.0f,0.0f));
 				Ry = glm::rotate(glm::mat4(1.0f), glm::radians(rotation_angles.y), glm::vec3(0.0f,1.0f,0.0f));
+			} else if (currentManipulationMode == SCALING) {
+				renderModel.handleScaleKeyboardInput(window);
+				PlanCoords3d scale_factor = renderModel.getScaleCoords();
+    		S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z)); // Escala uniforme
+			// std::cout <<"(" << scale_factor.x << ", " << scale_factor.y << ", " << scale_factor.z << ")" << std::endl;
 			}
+		} else if (currentEntityToBeManipuled == OBSERVER) {
+			
 		}
-		// std::cout <<"(" << tranlation_coords.x << ", " << tranlation_coords.y << ", " << tranlation_coords.z << ")" << std::endl;
 		// std::cout <<"(" << rotation_angles.x << ", " << rotation_angles.y << ", " << rotation_angles.z << ")" << std::endl;
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(5, 5, 5)); // Escala uniforme
 
     glm::mat4 M = S * T * Rz * Rx * Ry;
 		M = MVP * M;
