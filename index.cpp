@@ -1,4 +1,4 @@
-// to run: g++ index.cpp src/lib/fileloader.cpp src/render_model.cpp -lGL -lglfw -lGLEW -o index && ./index
+// to run: g++ index.cpp src/lib/fileloader.cpp src/render_model.cpp src/view.cpp -lGL -lglfw -lGLEW -o index && ./index
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +18,7 @@
 #include "src/lib/fileloader.hpp"
 #include "src/lib/datadefinition.hpp"
 #include "src/render_model.hpp"
+#include "src/view.hpp"
 
 
 VisualizationMode currentVisualizationMode = FILLED;
@@ -32,6 +33,7 @@ glm::mat4 Rx;
 glm::mat4 Ry;
 glm::mat4 M;
 glm::mat4 S;
+glm::mat4 ViewStore;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS ) {
@@ -52,12 +54,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		currentManipulationMode = ROTATING;
 	} else if (key == GLFW_KEY_E && action == GLFW_PRESS) {
 		currentManipulationMode = SCALING;
+	} else if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+		currentEntityToBeManipuled = MESH;
+		currentManipulationMode = TRANSLATING;
+	} else if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+		currentEntityToBeManipuled = OBSERVER;
+		currentManipulationMode = TRANSLATING;
 	}
 }
-
-void update(void) {
-}
-
 
 std::vector<float> gerarVetorAleatorio(const std::vector<float>& original) {
     std::vector<float> resultado;
@@ -121,7 +125,7 @@ int loadOpenGL() {
 }
 
 int main () {
-
+	View viewObj;
   int loadOpenGLStatus = loadOpenGL();
   if (loadOpenGLStatus != 1) {
     std::cout << "Erro ao inicilizar o OpenGl" << std::endl;
@@ -146,14 +150,14 @@ int main () {
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
   // glm::mat4 Projection = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, 0.1f, 100.0f);
-
-	glm::mat4 View       = glm::lookAt(
-								glm::vec3(0,0,3), // Camera is at (4,3,-3), in World Space
-								glm::vec3(0,0,0), // and looks at the origin
-								glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-						   );
+	ViewStore = viewObj.getView();
+	// glm::mat4 View       = glm::lookAt(
+	// 							glm::vec3(0,0,3), // Camera is at (4,3,-3), in World Space
+	// 							glm::vec3(0,0,0), // and looks at the origin
+	// 							glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+	// 					   );
   glm::mat4 Model = glm::mat4(1.0f);
-  glm::mat4 MVP = Projection * View * Model;
+  glm::mat4 MVP = Projection * ViewStore * Model;
 
   GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -212,7 +216,6 @@ int main () {
 			(void*)0                          // array buffer offset
 		);
 
-    update();
 		if (currentEntityToBeManipuled == MESH) {
 			if (currentManipulationMode == TRANSLATING) {
 				renderModel.handleTranslationKeyboardInput(window);
@@ -231,12 +234,15 @@ int main () {
 			// std::cout <<"(" << scale_factor.x << ", " << scale_factor.y << ", " << scale_factor.z << ")" << std::endl;
 			}
 		} else if (currentEntityToBeManipuled == OBSERVER) {
-			
+			if (currentManipulationMode == TRANSLATING) {
+				viewObj.handleTranslationKeyboardInput(window);
+				ViewStore = viewObj.getView();
+			}
 		}
 		// std::cout <<"(" << rotation_angles.x << ", " << rotation_angles.y << ", " << rotation_angles.z << ")" << std::endl;
 
     glm::mat4 M = S * T * Rz * Rx * Ry;
-		M = MVP * M;
+		M = Projection * ViewStore * M;
 
 
 

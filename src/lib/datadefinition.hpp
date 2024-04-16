@@ -8,7 +8,7 @@ enum VisualizationMode {
 enum ManipulationMode {
   TRANSLATING,
   ROTATING,
-  SCALING
+  SCALING,
 };
 
 enum EntityManipuled {

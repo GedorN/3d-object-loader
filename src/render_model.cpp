@@ -12,9 +12,9 @@ RenderModel::RenderModel(char* modelPath) {
   scale_factor.y = 1;
   scale_factor.z = 1;
 
-  s_increment_factor.x = 1;
-  s_increment_factor.y = 1;
-  s_increment_factor.z = 1;
+  s_increment_factor.x = .5f;
+  s_increment_factor.y = .5f;
+  s_increment_factor.z = .5f;
   // fileloader.getShapes(shape);
 }
 RenderModel::~RenderModel() {
