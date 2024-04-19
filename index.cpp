@@ -237,6 +237,10 @@ int main () {
 			if (currentManipulationMode == TRANSLATING) {
 				viewObj.handleTranslationKeyboardInput(window);
 				ViewStore = viewObj.getView();
+			} if (currentManipulationMode == ROTATING) {
+				viewObj.handleRotationKeyboardInput(window);
+				ViewStore = viewObj.getView();
+
 			}
 		}
 		// std::cout <<"(" << rotation_angles.x << ", " << rotation_angles.y << ", " << rotation_angles.z << ")" << std::endl;

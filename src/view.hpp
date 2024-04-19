@@ -7,13 +7,16 @@
 class View {
   private:
     PlanCoords3d world_position;
-    PlanCoords3d interest_point;
-    PlanCoords3d head_up;
+    PlanCoords3d rotation_angle;
     IncCoords world_position_increment_ratio;
-    IncCoords interest_point_increment_ratio;
+    IncCoords r_angle_increment_ratio;
     IncCoords head_up_increment_ratio;
+    glm::vec3 rotated_cam;
+    glm::vec3 head;
   public:
     View();
     void handleTranslationKeyboardInput(GLFWwindow* window);
+    void handleRotationKeyboardInput(GLFWwindow* window);
+    void setRotationRadius();
     glm::mat4 getView();
 };
