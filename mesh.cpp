@@ -1,5 +1,3 @@
-// to run: g++ index.cpp src/lib/fileloader.cpp src/render_model.cpp src/view.cpp -lGL -lglfw -lGLEW -o index && ./index
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
