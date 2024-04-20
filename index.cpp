@@ -151,8 +151,55 @@ int loadOpenGL() {
 int main (int argc, char* argv[]) {
 
 	if (argc <= 1) {
-		std::cout << "Parâmetro obj não recebido " << std::endl;
+		std::cout << "Parâmetro obj não recebido. Digite -h ou --help para mais informações " << std::endl;
 		exit(-1);
+	}
+	if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+		std::cout << "Uso: " << argv[0] << std::endl;
+		std::cout << "Modos de visualização:" << std::endl;
+		std::cout << "  v: Alterna a vizualização entre face (polígonos preenchidos) e wireframe"<< std::endl;
+		std::cout << "Modos de manipualção: " << std::endl;
+		std::cout << "  m: o programa entra em modo de manipulação de malha" << std::endl;
+		std::cout << "  o: o programa entra em modo de manipulação do obersavador" << std::endl;
+		std::cout << "Manipulação de malha: " << std::endl;
+		std::cout << "  t: o programa entra em modo de translação do objeto" << std::endl;
+		std::cout << "    -seta para cima: deslocamento positivo em y" << std::endl;
+		std::cout << "    -seta para baixo: deslocamento negativo em y" << std::endl;
+		std::cout << "    -seta para a direita: deslocamento positivo em x" << std::endl;
+		std::cout << "    -seta para a esquerda: deslocamento negativo em x" << std::endl;
+		std::cout << "    -a: deslocamento positivo em z" << std::endl;
+		std::cout << "    -d: deslocamento negativo em z" << std::endl;
+		std::cout << "  r: o programa entra em modo de rotação do objeto" << std::endl;
+		std::cout << "    -seta para cima: rotação positivo em y" << std::endl;
+		std::cout << "    -seta para baixo: rotação negativo em y" << std::endl;
+		std::cout << "    -seta para a direita: rotação positivo em x" << std::endl;
+		std::cout << "    -seta para a esquerda: rotação negativo em x" << std::endl;
+		std::cout << "    -a: rotação positivo em z" << std::endl;
+		std::cout << "    -d: rotação negativo em z" << std::endl;
+		std::cout << "  e: o programa entra em modo de rotação do objeto" << std::endl;
+		std::cout << "    -seta para cima: fator de escala maior que 1 em y" << std::endl;
+		std::cout << "    -sseta para baixo: fator de escala menor que 1 e maior que 0 em y" << std::endl;
+		std::cout << "    -seta para a direita: fator de escala maior que 1 em x" << std::endl;
+		std::cout << "    -seta para a esquerda: fator de escala menor que 1 e maior que 0 em x" << std::endl;
+		std::cout << "    -a: fator de escala maior que 1 em z" << std::endl;
+		std::cout << "    -d: fator de escala menor que 1 e maior que 0 em z" << std::endl;
+		std::cout << "Manipulação de observador: " << std::endl;
+		std::cout << "  t: o programa entra em modo de translação do observador" << std::endl;
+		std::cout << "    -seta para cima: deslocamento positivo em y" << std::endl;
+		std::cout << "    -seta para baixo: deslocamento negativo em y" << std::endl;
+		std::cout << "    -seta para a direita: deslocamento positivo em x" << std::endl;
+		std::cout << "    -seta para a esquerda: deslocamento negativo em x" << std::endl;
+		std::cout << "    -a: deslocamento positivo em z" << std::endl;
+		std::cout << "    -d: deslocamento negativo em z" << std::endl;
+		std::cout << "  r: o programa entra em modo de rotação do observador" << std::endl;
+		std::cout << "    -seta para cima: rotação positiva em y" << std::endl;
+		std::cout << "    -seta para baixo: rotação negativa em y" << std::endl;
+		std::cout << "    -seta para a direita: rotação positiva em x" << std::endl;
+		std::cout << "    -seta para a esquerda: rotação negativa em x" << std::endl;
+		std::cout << "    -a: rotação positiva em z" << std::endl;
+		std::cout << "    -d: rotação negativa em z" << std::endl;
+
+		exit(0);
 	}
 
 	View viewObj;
