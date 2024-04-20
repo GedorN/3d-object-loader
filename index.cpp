@@ -66,16 +66,40 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 std::vector<float> gerarVetorAleatorio(const std::vector<float>& original) {
     std::vector<float> resultado;
     resultado.reserve(original.size()); // Otimização para alocar espaço de antemão
+		 float r1 = 0.5, g1 = 0.2, b1 = 0.2; // Cor inicial vermelha
+    float r2 = 0.2, g2 = 0.2, b2 = 0.5; // Cor final azul
 
-    // Motor de números aleatórios
-    std::random_device rd;  // Obter um número aleatório do hardware
-    std::mt19937 gen(rd()); // Alimentar o gerador de números aleatórios
-    std::uniform_real_distribution<> dis(0.0, 1.0); // Distribuição entre 0 e 1
 
-    for (size_t i = 0; i < original.size(); i++) {
-        // Gerar um novo glm::vec3 com componentes aleatórias entre 0 e 1
-        resultado.push_back(0.5);
-        // resultado.push_back(dis(gen));
+    // // Motor de números aleatórios
+    // std::random_device rd;  // Obter um número aleatório do hardware
+    // std::mt19937 gen(rd()); // Alimentar o gerador de números aleatórios
+    // std::uniform_real_distribution<> dis(0.0, 1.0); // Distribuição entre 0 e 1
+
+    // for (size_t i = 0; i < original.size(); i++) {
+    //     // Gerar um novo glm::vec3 com componentes aleatórias entre 0 e 1
+    //     // resultado.push_back(0.5);
+    //     resultado.push_back(dis(gen));
+    // }
+
+		int transitionPoint = original.size() * 0.7; // 70% do vetor
+
+    for (int i = 0; i < original.size(); ++i) {
+        float t;
+        if (i <= transitionPoint) {
+            t = float(i) / transitionPoint; // Interpolação linear até 70% do vetor
+        } else {
+            t = 1.0; // Após 70%, mantém a cor final
+        }
+        
+        // Calcula a cor interpolada
+        float r = r1 + t * (r2 - r1);
+        float g = g1 + t * (g2 - g1);
+        float b = b1 + t * (b2 - b1);
+        
+        // Adiciona ao vetor
+        resultado.push_back(r);
+        resultado.push_back(g);
+        resultado.push_back(b);
     }
 
     return resultado;
@@ -114,7 +138,7 @@ int loadOpenGL() {
 	}
 
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClearColor(0.f, 0.f, 0.f, 1.0f);
 
  	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
@@ -124,7 +148,13 @@ int loadOpenGL() {
   return 1;
 }
 
-int main () {
+int main (int argc, char* argv[]) {
+
+	if (argc <= 1) {
+		std::cout << "Parâmetro obj não recebido " << std::endl;
+		exit(-1);
+	}
+
 	View viewObj;
   int loadOpenGLStatus = loadOpenGL();
   if (loadOpenGLStatus != 1) {
@@ -132,8 +162,8 @@ int main () {
     exit(-1);
   }
 
-	char filename[] = "bunny.obj";
-	RenderModel renderModel(filename);
+	// char filename[] = "bunny.obj";
+	RenderModel renderModel(argv[1]);
   // FileLoader fileloader(filename);
   std::vector<float> vec;
 	renderModel.getShape(vec);
