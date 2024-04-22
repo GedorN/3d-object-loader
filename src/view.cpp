@@ -7,9 +7,9 @@ View::View() {
   world_position.y = 0;
   world_position.z = 15;
 
-  world_position_increment_ratio.x = .5f;
-  world_position_increment_ratio.y = .5f;
-  world_position_increment_ratio.z = .5f;
+  world_position_increment_ratio.x = .25f;
+  world_position_increment_ratio.y = .25f;
+  world_position_increment_ratio.z = .25f;
 
   rotation_angle.x = 0;
   rotation_angle.y = 0;

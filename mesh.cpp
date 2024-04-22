@@ -2,12 +2,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <random>
-// Include GLEW
 #include <GL/glew.h>
-
-// Include GLFW
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -61,44 +57,44 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-std::vector<float> gerarVetorAleatorio(const std::vector<float>& original) {
+std::vector<float> gerarCores(const std::vector<float>& original) {
+		float lower = original[1];
+		float higher = original[1];
+		for (int i = 4; i < original.size(); i += 3){
+			if (original[i] < lower) lower = original[i];
+			if (original[i] > higher) higher = original[i];
+		}
+
+		float limiar = (lower + higher) / 4;
+		float hight = higher - lower;
+
+		// std::cout << "Menor " << lower << std::endl;
+		// std::cout << "Maior " << higher << std::endl;
+		// std::cout << "Media " << average << std::endl;
+
+    
     std::vector<float> resultado;
     resultado.reserve(original.size()); // Otimização para alocar espaço de antemão
-		 float r1 = 0.5, g1 = 0.2, b1 = 0.2; // Cor inicial vermelha
-    float r2 = 0.2, g2 = 0.2, b2 = 0.5; // Cor final azul
+		float r1 = 0.8, g1 = 0, b1 = 0; // Cor inicial vermelha
+    float r2 = 0, g2 = 0, b2 = 0.8; // Cor final azul
 
 
-    // // Motor de números aleatórios
-    // std::random_device rd;  // Obter um número aleatório do hardware
-    // std::mt19937 gen(rd()); // Alimentar o gerador de números aleatórios
-    // std::uniform_real_distribution<> dis(0.0, 1.0); // Distribuição entre 0 e 1
+		for (int i = 1; i < original.size(); i+=3) {
+			if (original[i] >= limiar) {
+				resultado.push_back(r1);
+				resultado.push_back(g1);
+				resultado.push_back(b1);
+				resultado.push_back(1.f / (hight / original[i]));
 
-    // for (size_t i = 0; i < original.size(); i++) {
-    //     // Gerar um novo glm::vec3 com componentes aleatórias entre 0 e 1
-    //     // resultado.push_back(0.5);
-    //     resultado.push_back(dis(gen));
-    // }
+			} else {
+				resultado.push_back(r2);
+				resultado.push_back(g2);
+				resultado.push_back(b2);
+				resultado.push_back(1.f / (hight / original[i]));
 
-		int transitionPoint = original.size() * 0.7; // 70% do vetor
 
-    for (int i = 0; i < original.size(); ++i) {
-        float t;
-        if (i <= transitionPoint) {
-            t = float(i) / transitionPoint; // Interpolação linear até 70% do vetor
-        } else {
-            t = 1.0; // Após 70%, mantém a cor final
-        }
-        
-        // Calcula a cor interpolada
-        float r = r1 + t * (r2 - r1);
-        float g = g1 + t * (g2 - g1);
-        float b = b1 + t * (b2 - b1);
-        
-        // Adiciona ao vetor
-        resultado.push_back(r);
-        resultado.push_back(g);
-        resultado.push_back(b);
-    }
+			}
+		}
 
     return resultado;
 }
@@ -142,6 +138,9 @@ int loadOpenGL() {
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it is closer to the camera than the former one
 	glDepthFunc(GL_LESS);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
   return 1;
 }
@@ -207,13 +206,12 @@ int main (int argc, char* argv[]) {
     exit(-1);
   }
 
-	// char filename[] = "bunny.obj";
 	RenderModel renderModel(argv[1]);
-  // FileLoader fileloader(filename);
   std::vector<float> vec;
 	renderModel.getShape(vec);
-  // fileloader.getShapes(vec);
-  std::vector<float> colors = gerarVetorAleatorio(vec);
+
+	std::cout << "Número de triângulos carregados: " << vec.size() / 9 << std::endl;
+  std::vector<float> colors = gerarCores(vec);
 
 
   GLuint VertexArrayID;
@@ -224,13 +222,7 @@ int main (int argc, char* argv[]) {
 
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-  // glm::mat4 Projection = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, 0.1f, 100.0f);
 	ViewStore = viewObj.getView();
-	// glm::mat4 View       = glm::lookAt(
-	// 							glm::vec3(0,0,3), // Camera is at (4,3,-3), in World Space
-	// 							glm::vec3(0,0,0), // and looks at the origin
-	// 							glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-	// 					   );
   glm::mat4 Model = glm::mat4(1.0f);
   glm::mat4 MVP = Projection * ViewStore * Model;
 
@@ -238,21 +230,11 @@ int main (int argc, char* argv[]) {
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER, vec.size() * sizeof(float), vec.data(), GL_STATIC_DRAW);
-	// glBufferData(GL_ARRAY_BUFFER, vec.capacity() * sizeof(float) + sizeof(vec), vec.data(), GL_STATIC_DRAW);
 
   GLuint colorbuffer;
 	glGenBuffers(1, &colorbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
-
-
-
-
-
-
-
-
-  
 
 	PlanCoords3d initial_tranlation_coords = renderModel.getTranlationCoords();
 	PlanCoords3d initial_rotation_angles = renderModel.getRotationCoords();
@@ -263,7 +245,6 @@ int main (int argc, char* argv[]) {
 	Ry = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.y), glm::vec3(0.0f,1.0f,0.0f));
 	S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z));
   do{
-		// Model m(void);
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID);
@@ -284,7 +265,7 @@ int main (int argc, char* argv[]) {
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 		glVertexAttribPointer(
 			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			3,                                // size
+			4,                                // size
 			GL_FLOAT,                         // type
 			GL_TRUE,                         // normalized?
 			0,                                // stride
@@ -318,24 +299,17 @@ int main (int argc, char* argv[]) {
 
 			}
 		}
-		// std::cout <<"(" << rotation_angles.x << ", " << rotation_angles.y << ", " << rotation_angles.z << ")" << std::endl;
 
     glm::mat4 M = S * T * Rz * Rx * Ry;
 		M = Projection * ViewStore * M;
 
-
-
     unsigned int loc = glGetUniformLocation(programID, "MVP");
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
-
-
-
 
 	  glDrawArrays(GL_TRIANGLES, 0, vec.size());
 
 		glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
-
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -347,12 +321,8 @@ int main (int argc, char* argv[]) {
 	glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
 
-
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
-
-
-  std::cout << "hello world!" << vec.size() << std::endl;
   return 0;
 }
