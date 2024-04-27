@@ -1,9 +1,21 @@
 #include "render_model.hpp"
 #include <iostream>
+#include "utils.hpp"
 
 
 RenderModel::RenderModel(char* modelPath) {
   fileloader = new FileLoader(modelPath);
+
+  fileloader->getShapes(shape);
+
+  float y = get_object_height_center_point(shape);
+  float x = get_object_width_center_point(shape);
+  float z = get_object_depth_center_point(shape);
+
+  translation_coords.y = -y;
+  translation_coords.x = -x;
+  translation_coords.z = -z;
+
   r_increment_angle.x = 1;
   r_increment_angle.y = 1;
   r_increment_angle.z = 1;
@@ -21,7 +33,8 @@ RenderModel::~RenderModel() {
   delete fileloader;
 }
 void RenderModel::getShape(std::vector<float> &vec) {
-  fileloader->getShapes(vec);
+  // fileloader->getShapes(vec);
+  vec = shape;
 }
 
 PlanCoords3d RenderModel::getTranlationCoords() {

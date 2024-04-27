@@ -14,7 +14,7 @@ class View {
     glm::vec3 rotated_cam;
     glm::vec3 head;
   public:
-    View();
+    View(float objHeight, float objectWidth);
     void handleTranslationKeyboardInput(GLFWwindow* window);
     void handleRotationKeyboardInput(GLFWwindow* window);
     void setRotationRadius();

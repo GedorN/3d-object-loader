@@ -7,7 +7,7 @@ LDFLAGS = -lGL -lglfw -lGLEW
 TARGET = mesh
 
 # Arquivos fonte
-SOURCES = mesh.cpp src/lib/fileloader.cpp src/render_model.cpp src/view.cpp
+SOURCES = mesh.cpp src/lib/fileloader.cpp src/render_model.cpp src/view.cpp src/utils.cpp
 
 # Regra padrão
 all: $(TARGET)

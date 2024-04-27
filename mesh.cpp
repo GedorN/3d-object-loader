@@ -13,6 +13,7 @@
 #include "src/lib/datadefinition.hpp"
 #include "src/render_model.hpp"
 #include "src/view.hpp"
+#include "src/utils.hpp"
 
 
 VisualizationMode currentVisualizationMode = FILLED;
@@ -55,48 +56,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		currentEntityToBeManipuled = OBSERVER;
 		currentManipulationMode = TRANSLATING;
 	}
-}
-
-std::vector<float> gerarCores(const std::vector<float>& original) {
-		float lower = original[1];
-		float higher = original[1];
-		for (int i = 4; i < original.size(); i += 3){
-			if (original[i] < lower) lower = original[i];
-			if (original[i] > higher) higher = original[i];
-		}
-
-		float limiar = (lower + higher) / 4;
-		float hight = higher - lower;
-
-		// std::cout << "Menor " << lower << std::endl;
-		// std::cout << "Maior " << higher << std::endl;
-		// std::cout << "Media " << average << std::endl;
-
-    
-    std::vector<float> resultado;
-    resultado.reserve(original.size()); // Otimização para alocar espaço de antemão
-		float r1 = 0.8, g1 = 0, b1 = 0; // Cor inicial vermelha
-    float r2 = 0, g2 = 0, b2 = 0.8; // Cor final azul
-
-
-		for (int i = 1; i < original.size(); i+=3) {
-			if (original[i] >= limiar) {
-				resultado.push_back(r1);
-				resultado.push_back(g1);
-				resultado.push_back(b1);
-				resultado.push_back(1.f / (hight / original[i]));
-
-			} else {
-				resultado.push_back(r2);
-				resultado.push_back(g2);
-				resultado.push_back(b2);
-				resultado.push_back(1.f / (hight / original[i]));
-
-
-			}
-		}
-
-    return resultado;
 }
 
 int loadOpenGL() {
@@ -199,7 +158,6 @@ int main (int argc, char* argv[]) {
 		exit(0);
 	}
 
-	View viewObj;
   int loadOpenGLStatus = loadOpenGL();
   if (loadOpenGLStatus != 1) {
     std::cout << "Erro ao inicilizar o OpenGl" << std::endl;
@@ -211,8 +169,14 @@ int main (int argc, char* argv[]) {
 	renderModel.getShape(vec);
 
 	std::cout << "Número de triângulos carregados: " << vec.size() / 9 << std::endl;
-  std::vector<float> colors = gerarCores(vec);
+  std::vector<float> colors = color_generator(vec);
 
+	float objHeight = get_object_height(vec);
+	float objectWidth = get_object_width(vec);
+
+	std::cout << "Proporções: " << objHeight <<  " X " << objectWidth << std::endl;
+
+	View viewObj(objHeight, objectWidth);
 
   GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);

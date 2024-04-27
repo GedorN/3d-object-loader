@@ -4,6 +4,7 @@
 #include "stdio.h"
 #include "lib/datadefinition.hpp"
 
+
 class RenderModel {
   private:
     FileLoader* fileloader;
