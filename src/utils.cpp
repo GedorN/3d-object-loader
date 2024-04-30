@@ -68,7 +68,7 @@ std::vector<float> color_generator(const std::vector<float>& original) {
 
     
     std::vector<float> resultado;
-    resultado.reserve(original.size()); // Otimização para alocar espaço de antemão
+    resultado.reserve(original.size());
 		float r1 = 0.8, g1 = 0, b1 = 0; // Cor inicial vermelha
     float r2 = 0, g2 = 0, b2 = 0.8; // Cor final azul
 

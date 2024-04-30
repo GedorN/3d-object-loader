@@ -12,6 +12,10 @@ RenderModel::RenderModel(char* modelPath) {
   float x = get_object_width_center_point(shape);
   float z = get_object_depth_center_point(shape);
 
+  float widht = get_object_width(shape);
+  float height = get_object_height(shape);
+  float depth = get_object_depth(shape);
+
   translation_coords.y = -y;
   translation_coords.x = -x;
   translation_coords.z = -z;
@@ -24,9 +28,15 @@ RenderModel::RenderModel(char* modelPath) {
   scale_factor.y = 1;
   scale_factor.z = 1;
 
-  s_increment_factor.x = 5.f;
-  s_increment_factor.y = 5.f;
-  s_increment_factor.z = 5.f;
+  s_increment_factor.x = widht / 10;
+  s_increment_factor.y = height / 10;
+  s_increment_factor.z = depth / 10;
+
+  float lower = widht < height ? widht : height;
+
+  t_increment_coords.x = lower / 15;
+  t_increment_coords.y = lower / 15;
+  t_increment_coords.z = lower / 15;
   // fileloader.getShapes(shape);
 }
 RenderModel::~RenderModel() {

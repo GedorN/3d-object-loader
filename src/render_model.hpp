@@ -15,12 +15,6 @@ class RenderModel {
     IncCoords t_increment_coords;
     IncCoords r_increment_angle;
     IncCoords s_increment_factor;
-    // float translate_x = .0f;
-    // float translate_y = .0f;
-    // float translate_z = .0f;
-    // float translate_x_inc = .5f;
-    // float translate_y_inc = .5f;
-    // float translate_z_inc = .5f;
   public:
   RenderModel(char* modelPath);
   ~RenderModel();

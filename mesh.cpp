@@ -32,10 +32,8 @@ glm::mat4 ViewStore;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS ) {
-		// Fecha a janela se 'Q' for pressionado
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	} else if (key == GLFW_KEY_V && action == GLFW_PRESS ) {
-		// Show wireframe if "v" is pressed
 		if (currentVisualizationMode == FILLED) {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			currentVisualizationMode = WIREFRAME;
@@ -82,7 +80,7 @@ int loadOpenGL() {
 		glfwSetKeyCallback(window, key_callback);
 
   // Initialize GLEW
-	glewExperimental = true; // Needed for core profile
+	glewExperimental = true;
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		getchar();
@@ -93,9 +91,7 @@ int loadOpenGL() {
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
   glClearColor(0.f, 0.f, 0.f, 1.0f);
 
- 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it is closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -217,23 +213,23 @@ int main (int argc, char* argv[]) {
     glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_TRUE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
+			0,
+			3,
+			GL_FLOAT,
+			GL_TRUE,
+			0,
+			(void*)0
 		);
 
     glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 		glVertexAttribPointer(
-			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-			4,                                // size
-			GL_FLOAT,                         // type
-			GL_TRUE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
+			1,
+			4,
+			GL_FLOAT,
+			GL_TRUE,
+			0,
+			(void*)0
 		);
 
 		if (currentEntityToBeManipuled == MESH) {
@@ -250,8 +246,7 @@ int main (int argc, char* argv[]) {
 			} else if (currentManipulationMode == SCALING) {
 				renderModel.handleScaleKeyboardInput(window);
 				PlanCoords3d scale_factor = renderModel.getScaleCoords();
-    		S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z)); // Escala uniforme
-			// std::cout <<"(" << scale_factor.x << ", " << scale_factor.y << ", " << scale_factor.z << ")" << std::endl;
+    		S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z));
 			}
 		} else if (currentEntityToBeManipuled == OBSERVER) {
 			if (currentManipulationMode == TRANSLATING) {
