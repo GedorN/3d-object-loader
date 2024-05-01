@@ -169,10 +169,11 @@ int main (int argc, char* argv[]) {
 
 	float objHeight = get_object_height(vec);
 	float objectWidth = get_object_width(vec);
+	float ObjectDepth = get_object_depth(vec);
 
 	std::cout << "Proporções: " << objHeight <<  " X " << objectWidth << std::endl;
 
-	View viewObj(objHeight, objectWidth);
+	View viewObj(objHeight, objectWidth, ObjectDepth);
 
   GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);

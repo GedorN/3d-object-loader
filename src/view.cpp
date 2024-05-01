@@ -1,7 +1,7 @@
 #include "view.hpp"
 #include <iostream>
 #include "stdio.h"
-View::View(float objHeight, float objectWidth) {
+View::View(float objHeight, float objectWidth, float ObjectDepth) {
 
   float higher = objHeight > objectWidth ? objHeight : objectWidth;
 
@@ -9,9 +9,9 @@ View::View(float objHeight, float objectWidth) {
   world_position.y = 0;
   world_position.z = higher > 1 ? higher : 2 * higher;
 
-  world_position_increment_ratio.x = .25f;
-  world_position_increment_ratio.y = .25f;
-  world_position_increment_ratio.z = .25f;
+  world_position_increment_ratio.x = objectWidth / 10;
+  world_position_increment_ratio.y = objHeight / 10;
+  world_position_increment_ratio.z = ObjectDepth / 10;
 
   rotation_angle.x = 0;
   rotation_angle.y = 0;
