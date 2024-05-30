@@ -29,9 +29,9 @@ void FileLoader::componentsToVec3s(const std::vector<tinyobj::shape_t> &componen
         size_t fv = size_t(components[s].mesh.num_face_vertices[f]);
         for (size_t v = 0; v < fv; v++) {
           tinyobj::index_t idx = components[s].mesh.indices[index_offset + v];
-          tinyobj::real_t vx = attrib.vertices[3*size_t(idx.vertex_index)+0];
-          tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
-          tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
+          tinyobj::real_t vx = attrib.vertices[3*(idx.vertex_index)+0];
+          tinyobj::real_t vy = attrib.vertices[3*(idx.vertex_index)+1];
+          tinyobj::real_t vz = attrib.vertices[3*(idx.vertex_index)+2];
           vecs.push_back(vx);
           vecs.push_back(vy);
           vecs.push_back(vz);

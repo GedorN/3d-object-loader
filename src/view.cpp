@@ -4,6 +4,7 @@
 View::View(float objHeight, float objectWidth, float ObjectDepth) {
 
   float higher = objHeight > objectWidth ? objHeight : objectWidth;
+  higher = higher > 2000 ?  1000 : higher;
 
   world_position.x = 0;
   world_position.y = 0;

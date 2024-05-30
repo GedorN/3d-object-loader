@@ -172,6 +172,7 @@ int main (int argc, char* argv[]) {
 	float ObjectDepth = get_object_depth(vec);
 
 	std::cout << "Proporções: " << objHeight <<  " X " << objectWidth << std::endl;
+	std::cout << "objDepth: " << ObjectDepth << "objectWidth: " << objectWidth << "objHeight" << objHeight << std::endl;
 
 	View viewObj(objHeight, objectWidth, ObjectDepth);
 
@@ -182,7 +183,7 @@ int main (int argc, char* argv[]) {
   GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader" );
 
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 2000.0f);
 	ViewStore = viewObj.getView();
   glm::mat4 Model = glm::mat4(1.0f);
   glm::mat4 MVP = Projection * ViewStore * Model;
