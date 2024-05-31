@@ -90,3 +90,25 @@ std::vector<float> color_generator(const std::vector<float>& original) {
 
     return resultado;
 }
+
+
+float calculateBoundingSphereRadius(std::vector<float> vec, std::vector<float> center) {
+    // float maxDistance = 0.0f;
+    // for (const auto& shape : shapes) {
+    //     for (const auto& index : shape.mesh.indices) {
+    //         glm::vec3 vertex(
+    //             attrib.vertices[3 * index.vertex_index + 0],
+    //             attrib.vertices[3 * index.vertex_index + 1],
+    //             attrib.vertices[3 * index.vertex_index + 2]
+    //         );
+    //         float distance = glm::length(vertex - center);
+    //         maxDistance = std::max(maxDistance, distance);
+    //     }
+    // }
+    // return maxDistance;
+}
+
+void positionCamera(float boundingSphereRadius, std::vector<float> modelCenter) {
+    // float distance = boundingSphereRadius / sin(glm::radians(45.0f / 2.0f));  // Considering that 45.0f is the FoV
+    // position = modelCenter + glm::vec3(0.0f, 0.0f, distance);
+}

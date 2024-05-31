@@ -9,6 +9,7 @@ class RenderModel {
   private:
     FileLoader* fileloader;
     std::vector<float> shape;
+    std::vector<float> normal;
     PlanCoords3d translation_coords;
     PlanCoords3d rotation_angle;
     PlanCoords3d scale_factor;
@@ -22,6 +23,7 @@ class RenderModel {
   void handleRotationKeyboardInput(GLFWwindow* window);
   void handleScaleKeyboardInput(GLFWwindow* window);
   void getShape(std::vector<float> &vec);
+  void getNormal(std::vector<float> &norm);
   PlanCoords3d getTranlationCoords();
   PlanCoords3d getRotationCoords();
   PlanCoords3d getScaleCoords();

@@ -19,6 +19,8 @@
 VisualizationMode currentVisualizationMode = FILLED;
 ManipulationMode currentManipulationMode = TRANSLATING;
 EntityManipuled currentEntityToBeManipuled = MESH;
+PlanCoords3d lightStartPosition;
+bool light = true;
 
 GLFWwindow* window;
 
@@ -53,6 +55,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	} else if (key == GLFW_KEY_O && action == GLFW_PRESS) {
 		currentEntityToBeManipuled = OBSERVER;
 		currentManipulationMode = TRANSLATING;
+	} else if ((key == GLFW_KEY_1 || key == GLFW_KEY_KP_1)&& action == GLFW_PRESS) {
+		light = !light;
 	}
 }
 
@@ -167,12 +171,15 @@ int main (int argc, char* argv[]) {
 	std::cout << "Número de triângulos carregados: " << vec.size() / 9 << std::endl;
   std::vector<float> colors = color_generator(vec);
 
+  std::vector<float> normals;
+	renderModel.getNormal(normals);
+
 	float objHeight = get_object_height(vec);
 	float objectWidth = get_object_width(vec);
 	float ObjectDepth = get_object_depth(vec);
 
 	std::cout << "Proporções: " << objHeight <<  " X " << objectWidth << std::endl;
-	std::cout << "objDepth: " << ObjectDepth << "objectWidth: " << objectWidth << "objHeight" << objHeight << std::endl;
+	std::cout << "objDepth: " << ObjectDepth << "  objectWidth: " << objectWidth << "  objHeight" << objHeight << std::endl;
 
 	View viewObj(objHeight, objectWidth, ObjectDepth);
 
@@ -182,11 +189,19 @@ int main (int argc, char* argv[]) {
 
   GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader" );
 
-  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+  // GLuint MatrixID = glGetUniformLocation(programID, "MVP");
   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 2000.0f);
 	ViewStore = viewObj.getView();
-  glm::mat4 Model = glm::mat4(1.0f);
-  glm::mat4 MVP = Projection * ViewStore * Model;
+
+	glm::mat4 ViewInverse = glm::inverse(ViewStore);
+	glm::vec3 cameraPosition = glm::vec3(ViewInverse[3]);
+
+	lightStartPosition.x = cameraPosition.x;
+	lightStartPosition.y = cameraPosition.y;
+	lightStartPosition.z = cameraPosition.z;
+
+  // glm::mat4 Model = glm::mat4(1.0f);
+  // glm::mat4 MVP = Projection * ViewStore * Model;
 
   GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
@@ -197,6 +212,12 @@ int main (int argc, char* argv[]) {
 	glGenBuffers(1, &colorbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
 	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
+
+	GLuint normalbuffer;
+	glGenBuffers(2, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+
 
 	PlanCoords3d initial_tranlation_coords = renderModel.getTranlationCoords();
 	PlanCoords3d initial_rotation_angles = renderModel.getRotationCoords();
@@ -210,7 +231,7 @@ int main (int argc, char* argv[]) {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID);
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+    // glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -228,6 +249,17 @@ int main (int argc, char* argv[]) {
 		glVertexAttribPointer(
 			1,
 			4,
+			GL_FLOAT,
+			GL_TRUE,
+			0,
+			(void*)0
+		);
+    
+		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(
+			2,
+			3,
 			GL_FLOAT,
 			GL_TRUE,
 			0,
@@ -257,15 +289,49 @@ int main (int argc, char* argv[]) {
 			} if (currentManipulationMode == ROTATING) {
 				viewObj.handleRotationKeyboardInput(window);
 				ViewStore = viewObj.getView();
-
 			}
 		}
 
-    glm::mat4 M = S * T * Rz * Rx * Ry;
-		M = Projection * ViewStore * M;
+		unsigned int loc = glGetUniformLocation(programID, "useLight");
+		glUniform1i(loc, light);
 
-    unsigned int loc = glGetUniformLocation(programID, "MVP");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
+    glm::mat4 M = S * T * Rz * Rx * Ry;
+		// M = Projection * ViewStore * M;
+		glm::mat4 modelView = M;
+
+		glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelView)));
+
+		unsigned int normalMatrixLoc = glGetUniformLocation(programID, "normalMatrix");
+		glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+		loc = glGetUniformLocation(programID, "model");
+		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
+
+		loc = glGetUniformLocation(programID, "view");
+		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(ViewStore));
+
+		loc = glGetUniformLocation(programID, "projection");
+		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Projection));
+
+		loc = glGetUniformLocation(programID, "lightColor");
+		glUniform3f(loc, 1.0, 1.0, 1.0);
+		
+		loc = glGetUniformLocation(programID, "lightPosition");
+		glUniform3f(loc, lightStartPosition.x, lightStartPosition.y, lightStartPosition.z);
+
+
+    glm::mat4 ViewInverse = glm::inverse(ViewStore);
+		glm::vec3 cameraPosition = glm::vec3(ViewInverse[3]);
+
+		// Camera position.
+		loc = glGetUniformLocation(programID, "cameraPosition");
+		glUniform3f(loc, cameraPosition.x, cameraPosition.y , cameraPosition.z);
+
+
+
+
+    // unsigned int loc = glGetUniformLocation(programID, "MVP");
+    // glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
 
 	  glDrawArrays(GL_TRIANGLES, 0, vec.size());
 
@@ -281,6 +347,7 @@ int main (int argc, char* argv[]) {
 	glDeleteProgram(programID);
 	glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
+	glDeleteBuffers(1, &normalbuffer);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

@@ -6,7 +6,7 @@
 RenderModel::RenderModel(char* modelPath) {
   fileloader = new FileLoader(modelPath);
 
-  fileloader->getShapes(shape);
+  fileloader->getShapes(shape, normal);
 
   float y = get_object_height_center_point(shape);
   float x = get_object_width_center_point(shape);
@@ -43,8 +43,11 @@ RenderModel::~RenderModel() {
   delete fileloader;
 }
 void RenderModel::getShape(std::vector<float> &vec) {
-  // fileloader->getShapes(vec);
   vec = shape;
+}
+
+void RenderModel::getNormal(std::vector<float> &norm) {
+  norm = normal;
 }
 
 PlanCoords3d RenderModel::getTranlationCoords() {
