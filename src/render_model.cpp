@@ -121,3 +121,11 @@ void RenderModel::handleScaleKeyboardInput(GLFWwindow* window) {
     scale_factor.z = (scale_factor.z  >  s_increment_factor.z) ? scale_factor.z - s_increment_factor.z : scale_factor.z;
   } 
 }
+
+void RenderModel::loadTextures(char* texture_faces) {
+  textureID = fileloader->loadTextures(texture_faces);
+}
+
+unsigned int RenderModel::getTextureID() {
+  return textureID;
+}

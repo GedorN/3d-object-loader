@@ -16,6 +16,7 @@ class RenderModel {
     IncCoords t_increment_coords;
     IncCoords r_increment_angle;
     IncCoords s_increment_factor;
+    unsigned int textureID;
   public:
   RenderModel(char* modelPath);
   ~RenderModel();
@@ -27,4 +28,6 @@ class RenderModel {
   PlanCoords3d getTranlationCoords();
   PlanCoords3d getRotationCoords();
   PlanCoords3d getScaleCoords();
+  void loadTextures(char* texture_faces);
+  unsigned int getTextureID();
 };

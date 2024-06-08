@@ -15,4 +15,5 @@ class FileLoader {
     const tinyobj::attrib_t& GetAttrib();
     const std::vector<tinyobj::material_t>& GetMaterials();
     void print_original();
+    unsigned int loadTextures(char* texture_faces);
 };

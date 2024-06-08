@@ -20,7 +20,8 @@ VisualizationMode currentVisualizationMode = FILLED;
 ManipulationMode currentManipulationMode = TRANSLATING;
 EntityManipuled currentEntityToBeManipuled = MESH;
 PlanCoords3d lightStartPosition;
-bool light = true;
+bool light = false;
+bool useTexture = false;
 
 GLFWwindow* window;
 
@@ -31,6 +32,18 @@ glm::mat4 Ry;
 glm::mat4 M;
 glm::mat4 S;
 glm::mat4 ViewStore;
+
+vector<std::string> faces
+{
+    "textures/wall.jpg",
+    "textures/wall.jpg",
+    "textures/wall.jpg",
+    "textures/wall.jpg",
+    "textures/wall.jpg",
+    "textures/wall.jpg"
+};
+
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS ) {
@@ -57,6 +70,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		currentManipulationMode = TRANSLATING;
 	} else if ((key == GLFW_KEY_1 || key == GLFW_KEY_KP_1)&& action == GLFW_PRESS) {
 		light = !light;
+	} else if ((key == GLFW_KEY_2 || key == GLFW_KEY_KP_2)&& action == GLFW_PRESS) {
+		useTexture = !useTexture;
 	}
 }
 
@@ -96,7 +111,6 @@ int loadOpenGL() {
   glClearColor(0.f, 0.f, 0.f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -108,6 +122,11 @@ int main (int argc, char* argv[]) {
 
 	if (argc <= 1) {
 		std::cout << "Parâmetro obj não recebido. Digite -h ou --help para mais informações " << std::endl;
+		exit(-1);
+	}
+
+	if (argc <= 2 && (strcmp(argv[1], "-h") != 0 || strcmp(argv[1], "--help") != 0)) {
+		std::cout << "Parâmetro textura não recebido. Digite -h ou --help para mais informações " << std::endl;
 		exit(-1);
 	}
 	if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
@@ -173,7 +192,6 @@ int main (int argc, char* argv[]) {
 
   std::vector<float> normals;
 	renderModel.getNormal(normals);
-
 	float objHeight = get_object_height(vec);
 	float objectWidth = get_object_width(vec);
 	float ObjectDepth = get_object_depth(vec);
@@ -183,9 +201,6 @@ int main (int argc, char* argv[]) {
 
 	View viewObj(objHeight, objectWidth, ObjectDepth);
 
-  GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
 
   GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader" );
 
@@ -214,9 +229,15 @@ int main (int argc, char* argv[]) {
 	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
 
 	GLuint normalbuffer;
-	glGenBuffers(2, &normalbuffer);
+	glGenBuffers(1, &normalbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
 	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+
+	unsigned int skyboxVAO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glBindVertexArray(skyboxVAO);
+
+
 
 
 	PlanCoords3d initial_tranlation_coords = renderModel.getTranlationCoords();
@@ -227,10 +248,18 @@ int main (int argc, char* argv[]) {
 	Rx = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.x), glm::vec3(1.0f,0.0f,0.0f));
 	Ry = glm::rotate(glm::mat4(1.0f), glm::radians(initial_rotation_angles.y), glm::vec3(0.0f,1.0f,0.0f));
 	S = glm::scale(glm::mat4(1.0f), glm::vec3(scale_factor.x, scale_factor.y, scale_factor.z));
+
+	glm::mat4 startM = S * T * Rz * Rx * Ry;
+
+	renderModel.loadTextures(argv[2]);
+	unsigned int textureID = renderModel.getTextureID();
+
   do{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(programID);
+
+		
     // glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     glEnableVertexAttribArray(0);
@@ -265,6 +294,7 @@ int main (int argc, char* argv[]) {
 			0,
 			(void*)0
 		);
+		
 
 		if (currentEntityToBeManipuled == MESH) {
 			if (currentManipulationMode == TRANSLATING) {
@@ -295,8 +325,10 @@ int main (int argc, char* argv[]) {
 		unsigned int loc = glGetUniformLocation(programID, "useLight");
 		glUniform1i(loc, light);
 
+		loc = glGetUniformLocation(programID, "useTexture");
+		glUniform1i(loc, useTexture);
+
     glm::mat4 M = S * T * Rz * Rx * Ry;
-		// M = Projection * ViewStore * M;
 		glm::mat4 modelView = M;
 
 		glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelView)));
@@ -307,12 +339,15 @@ int main (int argc, char* argv[]) {
 		loc = glGetUniformLocation(programID, "model");
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
 
+		
+
 		loc = glGetUniformLocation(programID, "view");
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(ViewStore));
 
 		loc = glGetUniformLocation(programID, "projection");
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Projection));
 
+	
 		loc = glGetUniformLocation(programID, "lightColor");
 		glUniform3f(loc, 1.0, 1.0, 1.0);
 		
@@ -332,11 +367,27 @@ int main (int argc, char* argv[]) {
 
     // unsigned int loc = glGetUniformLocation(programID, "MVP");
     // glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(M));
+		
 
-	  glDrawArrays(GL_TRIANGLES, 0, vec.size());
+		// glBindVertexArray(0);
 
+
+	glUniformMatrix4fv( glGetUniformLocation(programID, "startPos"), 1, GL_FALSE, glm::value_ptr(startM));
+		glUniform1i(glGetUniformLocation(programID, "cubemap"), 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+		glActiveTexture(GL_TEXTURE0);
+
+
+		glDrawArrays(GL_TRIANGLES, 0, vec.size() / 3);
+
+
+
+
+
+		// glBindVertexArray(0);
 		glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -348,6 +399,7 @@ int main (int argc, char* argv[]) {
 	glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
 	glDeleteBuffers(1, &normalbuffer);
+	glDeleteVertexArrays(1, &skyboxVAO);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

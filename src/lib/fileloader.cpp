@@ -1,6 +1,13 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "fileloader.hpp"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
 
@@ -86,4 +93,36 @@ const std::vector<tinyobj::material_t>& FileLoader::GetMaterials() {
   const std::vector<tinyobj::material_t>& materials = reader.GetMaterials();
 
   return materials;
+}
+
+unsigned int FileLoader::loadTextures(char* texture_faces) {
+  unsigned int textureID;
+  glGenTextures(1, &textureID);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+  
+  int width, height, nrChannels;
+  unsigned char *data;  
+  for(unsigned int i = 0; i < 6; i++) {
+    if (data) {
+      data = stbi_load(texture_faces, &width, &height, &nrChannels, 0);
+      glTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+        0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+      );
+      stbi_image_free(data);
+
+    } else {
+        std::cout << "Cubemap texture failed to load at path: " << texture_faces[i] << std::endl;
+        stbi_image_free(data);
+    }
+
+  }
+
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
+
+  return textureID;
 }
