@@ -4,6 +4,9 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec4 vertexColor;
 layout(location = 2) in vec3 normal;
+layout(location = 3) in vec3 aTangent;
+layout(location = 4) in vec3 aBitangent;
+
 
 
 uniform mat4 model;
@@ -11,11 +14,19 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat3 normalMatrix;
 uniform mat4 startPos;
+uniform vec3 lightPosition;
+uniform vec3 cameraPosition;
+
 
 out vec3 vNormal;
 out vec3 fragPosition;
 out vec4 fragmentColor;
 out vec3 modelPosition;
+
+out vec3 TangentViewPos;
+out vec3 TangentFragPos;
+out vec3 TangentLightPos;
+
 
 
 void main(){	
@@ -26,5 +37,17 @@ void main(){
 	fragPosition = vec3(model * vec4(vertexPosition_modelspace, 1.0));
 	modelPosition =   vec3(startPos * vec4(vertexPosition_modelspace, 1.0));
 	fragmentColor = vertexColor;
+
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	vec3 T = normalize(normalMatrix * aTangent);
+	vec3 N = normalize(normalMatrix * normal);
+	T = normalize(T - dot(T, N) * N);
+	vec3 B = cross(N, T);
+
+	mat3 TBN = transpose(mat3(T, B, N));    
+	TangentLightPos = TBN * lightPosition;
+	TangentViewPos  = TBN * cameraPosition;
+	TangentFragPos  = TBN * fragPosition;
+
 }
 

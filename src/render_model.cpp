@@ -6,7 +6,7 @@
 RenderModel::RenderModel(char* modelPath) {
   fileloader = new FileLoader(modelPath);
 
-  fileloader->getShapes(shape, normal);
+  fileloader->getShapes(shape, normal, indices);
 
   float y = get_object_height_center_point(shape);
   float x = get_object_width_center_point(shape);
@@ -48,6 +48,9 @@ void RenderModel::getShape(std::vector<float> &vec) {
 
 void RenderModel::getNormal(std::vector<float> &norm) {
   norm = normal;
+}
+void RenderModel::getIndices(std::vector<uint> &ind) {
+  ind = indices;
 }
 
 PlanCoords3d RenderModel::getTranlationCoords() {
@@ -126,6 +129,13 @@ void RenderModel::loadTextures(char* texture_faces) {
   textureID = fileloader->loadTextures(texture_faces);
 }
 
+void RenderModel::loadNormalMap(char* filename) {
+  normalMapID = fileloader->loadTextures(filename);
+}
+
 unsigned int RenderModel::getTextureID() {
   return textureID;
+}
+unsigned int RenderModel::getNormalMapID() {
+  return normalMapID;
 }

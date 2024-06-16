@@ -29,7 +29,7 @@ FileLoader::FileLoader(char* modelPath) {
 }
 
 
-void FileLoader::componentsToVec3s(const std::vector<tinyobj::shape_t> &components, const tinyobj::attrib_t& attrib, std::vector<float>& vecs, std::vector<float>& normals) {
+void FileLoader::componentsToVec3s(const std::vector<tinyobj::shape_t> &components, const tinyobj::attrib_t& attrib, std::vector<float>& vecs, std::vector<float>& normals, std::vector<uint>& indices) {
     for (size_t s = 0; s < components.size(); s++) {
       size_t index_offset = 0;
       for (size_t f = 0; f < components[s].mesh.num_face_vertices.size(); f++) {
@@ -55,6 +55,7 @@ void FileLoader::componentsToVec3s(const std::vector<tinyobj::shape_t> &componen
             normals.push_back(0.0f);
             normals.push_back(0.0f);
           }
+          indices.push_back(index_offset + v);
         }
         index_offset += fv;
       }
@@ -62,7 +63,7 @@ void FileLoader::componentsToVec3s(const std::vector<tinyobj::shape_t> &componen
     }
 }
 
-const std::vector<tinyobj::shape_t>& FileLoader::getShapes(std::vector<float>& vecs, std::vector<float>& normals) {
+const std::vector<tinyobj::shape_t>& FileLoader::getShapes(std::vector<float>& vecs, std::vector<float>& normals, std::vector<uint>& indices) {
   if (!reader.Error().empty()) {
     std::cerr << "TinyObjReader: " << reader.Error();
     exit(1);
@@ -70,7 +71,7 @@ const std::vector<tinyobj::shape_t>& FileLoader::getShapes(std::vector<float>& v
   const std::vector<tinyobj::shape_t>& shapes = reader.GetShapes();
   const tinyobj::attrib_t& attrib = reader.GetAttrib();
 
-  componentsToVec3s(shapes, attrib, vecs, normals);
+  componentsToVec3s(shapes, attrib, vecs, normals, indices);
 
   return shapes;
 }
@@ -125,4 +126,40 @@ unsigned int FileLoader::loadTextures(char* texture_faces) {
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
 
   return textureID;
+}
+
+unsigned int FileLoader::LoadTextureNormalMap(char* filename) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(filename, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << filename << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }

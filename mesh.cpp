@@ -22,6 +22,7 @@ EntityManipuled currentEntityToBeManipuled = MESH;
 PlanCoords3d lightStartPosition;
 bool light = false;
 bool useTexture = false;
+bool useNormalMap = false;
 
 GLFWwindow* window;
 
@@ -72,6 +73,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		light = !light;
 	} else if ((key == GLFW_KEY_2 || key == GLFW_KEY_KP_2)&& action == GLFW_PRESS) {
 		useTexture = !useTexture;
+	} else if ((key == GLFW_KEY_3 || key == GLFW_KEY_KP_3)&& action == GLFW_PRESS) {
+		useNormalMap = !useNormalMap;
 	}
 }
 
@@ -127,6 +130,10 @@ int main (int argc, char* argv[]) {
 
 	if (argc <= 2 && (strcmp(argv[1], "-h") != 0 || strcmp(argv[1], "--help") != 0)) {
 		std::cout << "Parâmetro textura não recebido. Digite -h ou --help para mais informações " << std::endl;
+		exit(-1);
+	}
+	if (argc <= 3 && (strcmp(argv[1], "-h") != 0 || strcmp(argv[1], "--help") != 0)) {
+		std::cout << "Parâmetro mapa de normais não recebido. Digite -h ou --help para mais informações " << std::endl;
 		exit(-1);
 	}
 	if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
@@ -192,6 +199,16 @@ int main (int argc, char* argv[]) {
 
   std::vector<float> normals;
 	renderModel.getNormal(normals);
+
+  std::vector<uint> indices;
+	renderModel.getIndices(indices);
+
+  std::vector<float> tangents;
+  std::vector<float> bitangents;
+
+	calculateTangentsAndBitangents(vec, normals, indices, tangents, bitangents);
+
+
 	float objHeight = get_object_height(vec);
 	float objectWidth = get_object_width(vec);
 	float ObjectDepth = get_object_depth(vec);
@@ -232,10 +249,31 @@ int main (int argc, char* argv[]) {
 	glGenBuffers(1, &normalbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
 	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(float), normals.data(), GL_STATIC_DRAW);
+	
+	GLuint tangentbuffer;
+	glGenBuffers(1, &tangentbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+	glBufferData(GL_ARRAY_BUFFER, tangents.size() * sizeof(float), tangents.data(), GL_STATIC_DRAW);
+	
+	GLuint bitangentbuffer;
+	glGenBuffers(1, &bitangentbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+	glBufferData(GL_ARRAY_BUFFER, bitangents.size() * sizeof(float), bitangents.data(), GL_STATIC_DRAW);
 
 	unsigned int skyboxVAO;
 	glGenVertexArrays(1, &skyboxVAO);
 	glBindVertexArray(skyboxVAO);
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -252,7 +290,9 @@ int main (int argc, char* argv[]) {
 	glm::mat4 startM = S * T * Rz * Rx * Ry;
 
 	renderModel.loadTextures(argv[2]);
+	renderModel.loadNormalMap(argv[3]);
 	unsigned int textureID = renderModel.getTextureID();
+	unsigned int normalMapID = renderModel.getNormalMapID();
 
   do{
 		// Clear the screen
@@ -294,6 +334,32 @@ int main (int argc, char* argv[]) {
 			0,
 			(void*)0
 		);
+
+		glEnableVertexAttribArray(3);
+		glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+		glVertexAttribPointer(
+			3, 
+			3, 
+			GL_FLOAT, 
+			GL_FALSE, 
+			3 * sizeof(float), 
+			(void*)0
+		);
+
+		glEnableVertexAttribArray(4);
+		glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+		glVertexAttribPointer(
+			4, 
+			3, 
+			GL_FLOAT, 
+			GL_FALSE, 
+			3 * sizeof(float), 
+			(void*)0
+		);
+
+
+
+
 		
 
 		if (currentEntityToBeManipuled == MESH) {
@@ -327,6 +393,9 @@ int main (int argc, char* argv[]) {
 
 		loc = glGetUniformLocation(programID, "useTexture");
 		glUniform1i(loc, useTexture);
+		
+		loc = glGetUniformLocation(programID, "useNormalMap");
+		glUniform1i(loc, useNormalMap);
 
     glm::mat4 M = S * T * Rz * Rx * Ry;
 		glm::mat4 modelView = M;
@@ -370,15 +439,22 @@ int main (int argc, char* argv[]) {
 		
 
 		// glBindVertexArray(0);
+	// glBindVertexArray(quadVAO);
+	// glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
 	glUniformMatrix4fv( glGetUniformLocation(programID, "startPos"), 1, GL_FALSE, glm::value_ptr(startM));
-		glUniform1i(glGetUniformLocation(programID, "cubemap"), 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-		glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(programID, "cubemap"), 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
 
-		glDrawArrays(GL_TRIANGLES, 0, vec.size() / 3);
+	glActiveTexture(GL_TEXTURE1);
+	glUniform1i(glGetUniformLocation(programID, "normalMap"), 1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, normalMapID);
+
+
+	glDrawArrays(GL_TRIANGLES, 0, vec.size() / 3);
 
 
 
@@ -388,6 +464,12 @@ int main (int argc, char* argv[]) {
 		glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+
+		// glBindVertexArray(quadVAO);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glBindVertexArray(0);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -399,6 +481,7 @@ int main (int argc, char* argv[]) {
 	glDeleteBuffers(1, &vertexbuffer);
   glDeleteBuffers(1, &colorbuffer);
 	glDeleteBuffers(1, &normalbuffer);
+
 	glDeleteVertexArrays(1, &skyboxVAO);
 
 	// Close OpenGL window and terminate GLFW
